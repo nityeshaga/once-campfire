@@ -86,6 +86,40 @@ tearing down the entire page to display it!
 
 **DHH's breakthrough:** "What if we just... sent HTML instead of JSON?"
 
+#### HTML Is Data, Not Just Presentation
+
+**The fundamental realization:** HTML is already a data format - it's structured, tagged text that describes content.
+
+**Traditional thinking:**
+- Server: Database → JSON (data)
+- Client: JSON → HTML (presentation)
+
+**DHH's insight:**
+- Server: Database → HTML (data AND presentation)
+- Client: Just display it
+
+#### The Round Trip Is The Real Bottleneck
+
+**What's actually expensive:**
+- Network round trip: ~270ms (DNS, TCP, SSL, latency)
+- Payload difference: JSON (0.5KB) vs HTML (1KB) = ~1ms
+
+**The false optimization:** Everyone optimized payload size when the round trip was 270x more expensive.
+
+#### Information Apps vs Interaction Apps: The Core Distinction
+
+**Information Apps (99% of web apps):**
+- GitHub, Basecamp, Shopify, Airbnb
+- Display and manipulate server data
+- Perfect for HTML over the wire
+
+**Interaction Apps (1% of web apps):**
+- Figma, Google Docs, Games
+- Heavy client-side computation
+- Need JavaScript frameworks
+
+**DHH's insight:** Most web apps are information apps, not interaction apps. The SPA revolution solved a problem that didn't exist for 99% of applications.
+
 ### The Three "Impossible" Things SSR Couldn't Do (Pre-Hotwire)
 
 1. **Partial page updates** → Solved by Turbo Frames
@@ -98,6 +132,246 @@ Hotwire toolkit for web development has 4 key tools:
 2. Turbo Frames = "Only swap the parts that changed"
 3. Turbo Streams = "Surgical DOM updates from the server"
 4. Stimulus = "JavaScript sprinkles that survive DOM swaps"
+
+## The Turbo Decision Framework (DHH's Rails World 2023)
+
+DHH presented this as a **graph with two axes** to help decide which Turbo tool to use:
+
+**X-axis: Developer Happiness (Ease of Use)**
+**Y-axis: Responsiveness (Native Feel)**
+
+```
+Responsiveness
+       ↑
+   High|  Turbo Stream
+       |  Actions
+       |
+       |           Turbo
+       |           Frames
+       |
+       |                    [Turbo 8 Morphing]
+       |                    (NEW!)
+       |
+       |                    Turbo Drive
+    Low|                    (Full <body>)
+       |________________________→
+        Hard              Easy
+
+               Developer Happiness
+```
+
+**The Tradeoff:**
+- **Turbo Drive** (bottom right): Maximum ease (zero setup), moderate responsiveness
+- **Turbo Frames** (middle): Medium effort, good responsiveness
+- **Turbo Streams** (top left): Most setup required, maximum responsiveness
+- **NEW: Turbo 8 Morphing** (top right): Turbo Drive ease + Turbo Streams responsiveness
+
+**Decision Framework:**
+1. **Start with Turbo Drive** - Works everywhere, zero setup
+2. **Upgrade to Turbo Frames** - When you need partial updates with navigation boundaries
+3. **Add Turbo Streams** - When you need surgical DOM updates or real-time features
+4. **Use Turbo Morphing** - When you want responsiveness without complexity
+
+## Turbo Morphing (The Game Changer)
+
+### The Core Problem: Lost Screen State
+
+**Traditional Turbo Drive limitations:**
+When you submit a form and get redirected back (a "page refresh"):
+- Entire `<body>` gets replaced
+- Scroll position resets to top
+- Text selection is lost
+- Form focus disappears
+- CSS transitions restart
+- Open dropdowns close
+
+**Example:** You're halfway down a long task list, select some text to copy, then check a checkbox. The page refreshes, you lose your scroll position, lose the text selection, and have to find where you were. Frustrating!
+
+### The Solution: Morphing
+
+**Turbo 8 Morphing** uses intelligent DOM diffing to:
+- Calculate the difference between current and new HTML
+- Update ONLY the elements that actually changed
+- Preserve everything else (scroll, selection, focus)
+- **All with just 2 lines of configuration!**
+
+### How to Enable Morphing
+
+```erb
+<!-- In your layout or specific pages -->
+<%= turbo_refreshes_with method: :morph, scroll: :preserve %>
+
+<!-- Or manually in HTML -->
+<head>
+  <meta name="turbo-refresh-method" content="morph">
+  <meta name="turbo-refresh-scroll" content="preserve">
+</head>
+```
+
+That's it! Your app now feels native-like.
+
+### Scenario 1: Form Submissions (Same User Updates)
+
+Jorge's task manager demo - checking off tasks without losing position:
+
+**Without Morphing:**
+```ruby
+# Controller
+def update
+  @task.update(task_params)
+  redirect_to project_path(@project)  # Page jumps to top!
+end
+```
+Result: Screen flashes, scroll lost, selection lost
+
+**With Morphing (exact same controller!):**
+```ruby
+# Controller - NO CHANGES!
+def update
+  @task.update(task_params)
+  redirect_to project_path(@project)  # Smooth update!
+end
+```
+Result: Only the task row updates, everything else preserved
+
+**What's happening:**
+1. Turbo detects a "page refresh" (redirecting to current URL)
+2. Fetches the new HTML
+3. Diffs it against current DOM
+4. Surgically updates only what changed
+
+### Scenario 2: Broadcasting (Other Users' Updates)
+
+Jorge's collaborative demo - changes on one screen update another:
+
+**The Old Way - Complex Turbo Streams:**
+```ruby
+# Model - had to specify every update
+after_update_commit do
+  broadcast_replace_to project, target: "task_#{id}"
+  broadcast_replace_to project, target: dom_id(project, :progress)
+  broadcast_update_to project, target: "complete_count"
+  # Easy to forget regions!
+end
+
+# Different templates for each action
+# create.turbo_stream.erb
+# update.turbo_stream.erb
+# destroy.turbo_stream.erb
+```
+
+**The New Way - Broadcasting with Morphing:**
+```ruby
+# Model
+class Project < ApplicationRecord
+  broadcasts_refreshes  # That's it!
+end
+
+class Task < ApplicationRecord
+  belongs_to :project, touch: true  # Triggers project refresh
+end
+
+# View - subscribe to updates
+<%= turbo_stream_from @project %>
+```
+
+Now when ANYONE updates a task:
+1. Task touches its project (updates timestamp)
+2. Project broadcasts a refresh signal
+3. All subscribed clients morph their page
+4. Everyone sees the update with their scroll preserved!
+
+### The Magic: One Signal Updates Everything
+
+**Before morphing:** You had to manually track every region:
+- Update the task row ✓
+- Update the progress bar ✓
+- Update the counter ✓
+- Update the delete button state ✓
+- Oh wait, forgot the header badge... 🐛
+
+**With morphing:** One refresh signal updates ALL regions automatically:
+```html
+<!-- Jorge's demo - ALL these update automatically -->
+<div class="progress-bar">75%</div>     <!-- Updates ✓ -->
+<span class="task-count">3 remaining</span>  <!-- Updates ✓ -->
+<tr class="task completed">...</tr>          <!-- Updates ✓ -->
+<button data-confirm="...">Delete</button>   <!-- Updates ✓ -->
+```
+
+### Excluding Regions from Morphing
+
+Sometimes you want to keep certain elements untouched:
+
+```html
+<!-- This modal stays open during morphing -->
+<div data-turbo-permanent id="upload-modal">
+  <!-- Content here won't be morphed -->
+</div>
+```
+
+### Turbo Frames with Morphing
+
+For frames that load additional content (like pagination):
+
+```erb
+<turbo-frame id="comments" refresh="morph" src="/comments?page=2">
+  <!-- Frame content morphs instead of replaces -->
+</turbo-frame>
+```
+
+### When Screen State is Preserved
+
+**Preserved during morphing:**
+- Vertical and horizontal scroll position
+- Text selection
+- Form field focus and cursor position
+- Textarea content being typed (if unchanged by server)
+- CSS animations/transitions in progress
+- Elements marked with `data-turbo-permanent`
+
+**Still replaced (intentionally):**
+- The actual content that changed
+- CSRF tokens (security)
+- Any server-side updates
+
+### Where Morphing Fits in the Responsiveness Spectrum
+
+```
+Responsiveness
+       ↑
+   High|  Turbo Stream Actions
+       |  (Manual but perfect control)
+       |
+       |           Turbo Frames
+       |           (Scoped updates)
+       |
+       |                    Turbo Drive + Morphing
+       |                    (NEW! Automatic precision)
+       |
+       |                    Turbo Drive
+    Low|                    (Full <body> replace)
+       |________________________→
+        Hard              Easy
+               Developer Happiness
+```
+
+**The key insight:** Morphing gives you Turbo Streams-level responsiveness with Turbo Drive-level simplicity!
+
+### The Conceptual Compression
+
+This is what DHH calls "conceptual compression" - complex becomes simple:
+
+**Without morphing:** 100+ lines of stream templates
+**With morphing:** 1 line (`broadcasts_refreshes`)
+
+You no longer think about:
+- Which regions need updating
+- Creating multiple turbo_stream templates
+- Coordinating updates across different actions
+- Missing an update region and causing bugs
+
+**The breakthrough:** You can build Notion-quality UX with redirect_to!
 
 ## 2. Turbo Frames: The "Impossible" Partial Update
 
@@ -1054,7 +1328,6 @@ But you'd lose:
 **Turbo Frames** = "This section is a mini-app within my page"
 **Turbo Streams** = "Here are specific instructions for DOM updates"
 
-
 ### Critical Distinction: Frames vs Streams (Don't Mix Them Up!)
 
 #### The Handbook Warning Explained
@@ -1993,6 +2266,20 @@ The DOM becomes your Redux store, but simpler!
 - Form submission (Turbo handles it)
 - Real-time updates (Turbo Streams)
 - Content loading (Turbo Frames)
+
+#### The Trix Editor Principle
+
+DHH's example: Basecamp built Trix (rich text editor) in JavaScript because **you can't send every character to the server** - that would create 270ms lag per keystroke.
+
+**The principle:** Build complex JavaScript components **once** when truly needed (character-by-character interaction), then reuse them. Don't rebuild everything in JavaScript just because you need **one** interactive component.
+
+**Examples that genuinely need JavaScript:**
+- Rich text editors (character-level interaction)
+- Real-time collaborative editing (Google Docs)
+- Canvas/graphics apps (Figma)
+- Games (continuous interaction)
+
+**Everything else:** Information display and manipulation - perfect for Hotwire.
 
 #### How Stimulus Completes the Hotwire Vision
 
