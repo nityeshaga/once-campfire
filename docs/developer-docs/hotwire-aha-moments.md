@@ -2637,6 +2637,200 @@ The 5% that genuinely need JS frameworks:
 - Heavy data visualization (Complex D3.js)
 
 
+## View Transitions: Native-Like Page Animations
+
+### What Are View Transitions?
+
+View Transitions are a browser API that creates smooth animated transitions between page states. Instead of the instant "flash" when navigating, elements can morph, slide, or fade between pages - like native mobile apps!
+
+### Enabling View Transitions in Rails
+
+It's shockingly simple - just add one meta tag:
+
+```erb
+<!-- app/views/layouts/application.html.erb -->
+<meta name="view-transition" content="same-origin">
+```
+
+That's it! Turbo Drive now uses the View Transitions API when available.
+
+### How Campfire Uses View Transitions
+
+Campfire uses `view-transition-name` CSS property to create smooth morphing effects between related elements across different pages. Here's how:
+
+#### Example 1: Avatar Morphing
+
+When you click your avatar to go to settings, it morphs smoothly:
+
+```erb
+<!-- In sidebar (app/views/users/sidebars/show.html.erb) -->
+<%= link_to user_profile_path, class: "btn avatar" do %>
+  <%= image_tag fresh_user_avatar_path(Current.user),
+      style: "view-transition-name: avatar-#{Current.user.id}" %>
+<% end %>
+
+<!-- In profile page (app/views/users/profiles/show.html.erb) -->
+<section style="view-transition-name: avatar-<%= @user.id %>">
+  <!-- Profile content -->
+</section>
+```
+
+**What happens:** The avatar image in the sidebar smoothly morphs into position on the profile page!
+
+#### Example 2: Button-to-Panel Transitions
+
+```erb
+<!-- Settings button in sidebar -->
+<%= link_to edit_account_path do %>
+  <%= image_tag "settings.svg",
+      style: "view-transition-name: account-settings" %>
+<% end %>
+
+<!-- Settings panel -->
+<section style="view-transition-name: account-settings">
+  <!-- Settings form -->
+</section>
+```
+
+The settings icon morphs into the settings panel!
+
+#### Example 3: Search Mode Transition
+
+```erb
+<!-- In normal chat view -->
+<%= link_to searches_path,
+    style: "view-transition-name: input-switcher" do %>
+  <%= image_tag "search.svg" %>
+<% end %>
+
+<!-- In search view -->
+<%= link_to room_path(@return_to_room),
+    style: "view-transition-name: input-switcher" do %>
+  <%= image_tag "arrow-left.svg" %>
+<% end %>
+```
+
+The search button morphs into a back button when entering search mode!
+
+### The Key Concept: Named View Transitions
+
+When two elements on different pages have the same `view-transition-name`, the browser:
+1. Takes a screenshot of the old element
+2. Takes a screenshot of the new element
+3. Animates between them (position, size, opacity)
+
+### Turbo's Direction Awareness
+
+Turbo adds `data-turbo-visit-direction` to the `<html>` element:
+
+```css
+/* Different animations for forward/back navigation */
+html[data-turbo-visit-direction="forward"]::view-transition-old(root) {
+  animation: slide-out-left 0.2s;
+}
+
+html[data-turbo-visit-direction="back"]::view-transition-old(root) {
+  animation: slide-out-right 0.2s;
+}
+```
+
+### Default Browser Behavior
+
+Even without custom CSS, the browser provides default fade transitions between pages. Elements with matching `view-transition-name` will morph between their positions.
+
+### Practical Patterns
+
+#### Pattern 1: Icon-to-Panel Morphing
+```erb
+<!-- List item -->
+<div style="view-transition-name: item-<%= item.id %>">
+  <%= item.name %>
+</div>
+
+<!-- Detail view -->
+<article style="view-transition-name: item-<%= item.id %>">
+  <!-- Expanded content -->
+</article>
+```
+
+#### Pattern 2: Persistent Elements
+```erb
+<!-- Elements that should stay in place during navigation -->
+<nav style="view-transition-name: main-nav">
+  <!-- Navigation stays put while content changes -->
+</nav>
+```
+
+#### Pattern 3: Dynamic Naming
+```erb
+<!-- Use Ruby to create unique transition names -->
+<%= link_to edit_room_path(room),
+    style: "view-transition-name: edit-room-#{room.id}" %>
+```
+
+### Why This is Revolutionary
+
+**Before View Transitions:**
+- Page changes = white flash
+- No visual connection between pages
+- Feels "webby" not "appy"
+
+**With View Transitions:**
+- Smooth morphing between related elements
+- Visual continuity across navigation
+- Feels like a native app
+
+**The magic:** You get native-app-like transitions with ZERO JavaScript! Just HTML attributes and CSS.
+
+### Browser Support
+
+View Transitions work in Chrome/Edge 111+ (March 2023). In unsupported browsers, navigation still works - just without the animations. Perfect progressive enhancement!
+
+### Advanced: Custom Animations
+
+You can customize the animations with CSS:
+
+```css
+/* Customize how elements enter/exit */
+::view-transition-old(root) {
+  animation: fade-and-scale-out 0.2s ease-out;
+}
+
+::view-transition-new(root) {
+  animation: fade-and-scale-in 0.2s ease-out;
+}
+
+@keyframes fade-and-scale-out {
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes fade-and-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+```
+
+### The Conceptual Compression
+
+Traditional SPAs need complex routing libraries and state management to achieve smooth transitions. With Hotwire + View Transitions:
+
+**Old way (React Router + Framer Motion):**
+- 50KB+ of JavaScript
+- Complex animation definitions
+- State synchronization issues
+
+**Hotwire way:**
+- 1 meta tag
+- CSS property on elements
+- Browser handles everything
+
+You get better animations with 100x less code!
+
 ## Case Study: Campfire by 37Signals
 
 ### 1. Why does "HTML over the wire" matter?
