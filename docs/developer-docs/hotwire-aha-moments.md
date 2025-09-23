@@ -56,8 +56,9 @@ Before Hotwire, web developers were stuck in a false dichotomy:
 
 1. Traditional SSR (Ruby on Rails, Django, PHP):
   - Server sends full HTML pages
-  - Every click = white flash + lost scroll position
-  - Felt "old" and "slow"
+  - Every click = full page reload
+  - White flash, lost scroll position
+  - Simple but felt "old" and "slow"
 
 2. SPA Frameworks (React, Vue, Angular):
   - Client renders everything with JavaScript
@@ -66,7 +67,7 @@ Before Hotwire, web developers were stuck in a false dichotomy:
   - Poor SEO, slow initial loads
   - Two codebases (API + frontend)
 
-They thought:
+The false choice:
 - **Want partial updates?** → Must use JavaScript/AJAX
 - **Want server-side simplicity?** → Accept full page reloads
 
@@ -74,18 +75,7 @@ They thought:
 
 **Hotwire proves SSR was never the problem - the lack of interactivity was!**
 
-By adding:
-- Smooth navigation (Turbo Drive)
-- Partial updates (Turbo Frames)  
-- Real-time capability (Turbo Streams)
-- Sprinkles of interactivity (Stimulus)
-
-**You get SPA-like experience with SSR simplicity!**
-
 ### DHH's Revolutionary Insight
-
-DHH realized everyone was solving the wrong problem. The issue wasn't that servers were sending HTML - it was that browsers were
-tearing down the entire page to display it!
 
 **DHH's breakthrough:** "What if we just... sent HTML instead of JSON?"
 
@@ -129,12 +119,12 @@ tearing down the entire page to display it!
 2. **Smooth page transitions** → Solved by Turbo Drive
 3. **Real-time updates** → Solved by Turbo Streams
 
-Hotwire toolkit for web development has 4 key tools:
+Hotwire provides these capabilities through 4 key tools:
 
-1. Turbo Drive = "Keep the page alive during navigation"
-2. Turbo Frames = "Only swap the parts that changed"
-3. Turbo Streams = "Surgical DOM updates from the server"
-4. Stimulus = "JavaScript sprinkles that survive DOM swaps"
+1. **Turbo Drive** = Smooth navigation without full page reloads
+2. **Turbo Frames** = Scope partial updates to specific page sections
+3. **Turbo Streams** = Surgical DOM updates from the server
+4. **Stimulus** = JavaScript sprinkles for client-side interactivity
 
 ## The Turbo Decision Framework (DHH's Rails World 2023)
 
@@ -179,9 +169,8 @@ Responsiveness
 
 ### The Core Problem: Lost Screen State
 
-**Traditional Turbo Drive limitations:**
-When you submit a form and get redirected back (a "page refresh"):
-- Entire `<body>` gets replaced
+**Traditional Turbo Drive behavior:**
+Turbo Drive keeps JavaScript/CSS context alive between navigations, but when you submit a form and get redirected back (a "page refresh"), it still replaces the entire `<body>`, which means:
 - Scroll position resets to top
 - Text selection is lost
 - Form focus disappears
@@ -190,13 +179,17 @@ When you submit a form and get redirected back (a "page refresh"):
 
 **Example:** You're halfway down a long task list, select some text to copy, then check a checkbox. The page refreshes, you lose your scroll position, lose the text selection, and have to find where you were. Frustrating!
 
-### The Solution: Morphing
+### The Solution: Morphing (A Turbo Drive Enhancement)
 
-**Turbo 8 Morphing** uses intelligent DOM diffing to:
-- Calculate the difference between current and new HTML
-- Update ONLY the elements that actually changed
-- Preserve everything else (scroll, selection, focus)
-- **All with just 2 lines of configuration!**
+**Turbo Morphing** is a new mode for Turbo Drive (introduced in Turbo 8) that changes how it updates the page:
+- **Default Turbo Drive:** Replaces entire `<body>` (fast but loses state)
+- **Turbo Drive with Morphing:** Diffs the DOM and surgically updates only what changed
+
+With morphing enabled, Turbo Drive:
+- Calculates the difference between current and new HTML
+- Updates ONLY the elements that actually changed
+- Preserves everything else (scroll, selection, focus)
+- **All with just 1-2 lines of configuration!**
 
 ### How to Enable Morphing
 
@@ -425,57 +418,33 @@ When user clicks "Archive":
 
 **The magic:** Server-side rendering, but only the part that changed!
 
-#### The REAL Performance Bottleneck (The Biggest Aha!)
+#### Why Turbo Frames Are Fast
 
-Everyone thought the problem was network/payload size. **WRONG!**
+Traditional full page reloads are slow because the browser has to:
+- Tear down the existing page
+- Re-parse and execute JavaScript
+- Recalculate styles
+- Rebuild the entire DOM
+- Re-render everything
 
-**What We Thought Was Slow**
-- "Sending too much HTML over the wire"
-- "Need smaller JSON payloads"
+Turbo Frames avoid this by:
+- Keeping the page intact
+- Only swapping the specific frame's content
+- No white flash between pages
+- Preserving JavaScript state outside the frame
 
-**What's ACTUALLY Slow (The Real Bottleneck)**
-```
-Browser page teardown → 200ms
-DOM reconstruction → 150ms
-CSS recalculation → 100ms
-JavaScript re-execution → 100ms
-Layout reflow → 50ms
-= 600ms of BROWSER WORK
-```
+### Turbo Streams vs Turbo Frames: Different Tools
 
-**The Numbers That Matter**
-```
-Traditional SSR:
-- Network (50KB HTML): 30ms
-- Browser teardown/rebuild: 600ms
-- Total: 630ms + WHITE FLASH
-
-Turbo Frames (even sending full page):
-- Network (50KB HTML): 30ms
-- Extract & swap frame: 30ms
-- Total: 60ms, NO FLASH
-
-Turbo Frames (optimized, just chunk):
-- Network (2KB HTML): 5ms
-- Swap frame: 30ms
-- Total: 35ms, NO FLASH
-```
-
-**The revelation:** Even sending "too much" HTML with Turbo is 10x faster than traditional SSR because we avoid the teardown/rebuild cycle!
-
-**The network was never the problem. The browser teardown was.**
-
-### Turbo Streams: Always Sends HTML Chunks
+**Turbo Streams:**
 - Server sends targeted HTML fragments
 - Used for real-time updates, form responses
 - Example: `turbo_stream.append "messages", partial: "message"`
 
-### Turbo Frames: Can Send Full Page OR Chunks
-- Server CAN send full page (Turbo extracts the frame it needs)
+**Turbo Frames:**
+- Server CAN send full page (Turbo extracts the matching frame)
 - Server CAN optimize and send just the frame
-- Both work! The key is: **no page teardown/rebuild**
-
-The revolutionary insight wasn't just about chunk size - it was about keeping the browser page alive!
+- Creates navigation boundaries within the page
+- Enables lazy loading with `src` attribute
 
 ### Turbo Frames: Parallelization & Lazy Loading
 
@@ -2959,7 +2928,7 @@ Redux exists to solve these React problems:
 React developers avoid direct DOM manipulation because:
 1. **Virtual DOM reconciliation** - Direct DOM changes break React's diffing
 2. **State mismatch** - DOM changes don't update React state
-3. **Performance myths** - Told "DOM is slow" (but it's the teardown/rebuild that's slow!)
+3. **Performance myths** - Told "DOM is slow" (but it's really about how you use it)
 
 Stimulus embraces the DOM because:
 1. **No virtual DOM** - The real DOM is the source of truth
