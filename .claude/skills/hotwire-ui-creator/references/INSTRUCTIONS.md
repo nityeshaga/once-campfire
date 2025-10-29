@@ -31,6 +31,26 @@ To enhance this skill, add the official Hotwire documentation:
   - Lifecycle callbacks
   - Best practices
 
+### Suggested Structure
+```
+references/
+├── INSTRUCTIONS.md (this file)
+├── hotwire-aha-moments.md (included)
+├── turbo/
+│   ├── handbook.md
+│   ├── drive.md
+│   ├── frames.md
+│   ├── streams.md
+│   └── native.md (optional)
+└── stimulus/
+    ├── handbook.md
+    ├── controllers.md
+    ├── actions.md
+    ├── targets.md
+    ├── values.md
+    └── lifecycle.md
+```
+
 ## Additional Resources
 
 The Campfire codebase (available in `.claude/skills/dhh-rails-reviewer/references/`) provides real-world examples of:

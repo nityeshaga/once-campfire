@@ -1,9 +1,9 @@
 ---
-name: hotwire-decision-maker
-description: Guide architectural decisions for building modern UIs with Hotwire (Turbo + Stimulus). Use when planning features, choosing between Turbo tools, or deciding on UI implementation approaches. Provides decision frameworks based on ease-of-use vs responsiveness trade-offs, real-world patterns from Campfire, and first-principles understanding of when to use Drive vs Frames vs Streams vs Morphing vs Stimulus.
+name: hotwire-ui-creator
+description: Guide planning and implementation of modern UIs with Hotwire (Turbo + Stimulus). Use when planning features, choosing between Turbo tools, deciding on UI implementation approaches, or building interactive components. Provides decision frameworks based on ease-of-use vs responsiveness trade-offs, implementation patterns, and access to official Turbo/Stimulus handbooks. Includes real-world examples from Campfire and first-principles understanding of when to use Drive vs Frames vs Streams vs Morphing vs Stimulus.
 ---
 
-# Hotwire Decision-Maker
+# Hotwire UI Creator
 
 ## Overview
 
@@ -516,17 +516,46 @@ This skill includes:
    - Real-world scenarios and examples
    - Common pitfalls and anti-patterns
 
-2. **Campfire Codebase** (in `.claude/skills/dhh-rails-reviewer/references/`):
+2. **Turbo Handbook** (`references/turbo-handbook/`):
+   - Official Hotwire Turbo documentation broken into chapters
+   - Read specific chapters when needing detailed API documentation
+   - `01_introduction.md` - Overview and core concepts
+   - `02_drive.md` - Page navigation, visits, caching
+   - `03_page_refreshes.md` - Morphing and page refresh strategies
+   - `04_frames.md` - Frame boundaries, lazy loading, src attribute
+   - `05_streams.md` - Stream actions, broadcasting, WebSocket integration
+   - `06_native.md` - iOS and Android adapters
+   - `07_building.md` - Building Turbo from source
+   - `08_installing.md` - Installation instructions
+
+3. **Stimulus Handbook** (`references/stimulus-handbook/`):
+   - Official Hotwire Stimulus documentation broken into chapters
+   - Read specific chapters when implementing Stimulus controllers
+   - `00_the_origin_of_stimulus.md` - Philosophy and design principles
+   - `01_introduction.md` - Core concepts overview
+   - `02_hello_stimulus.md` - First controller example
+   - `03_building_something_real.md` - Practical controller patterns
+   - `04_designing_for_resilience.md` - Progressive enhancement
+   - `05_managing_state.md` - Values, classes, and state management
+   - `06_working_with_external_resources.md` - APIs and external data
+   - `07_installing_stimulus.md` - Setup and configuration
+
+4. **Campfire Codebase** (in `.claude/skills/dhh-rails-reviewer/references/`):
    - Real production examples from 37signals
    - Turbo Frame patterns in views
    - Stimulus controllers in `app/javascript/controllers/`
    - Broadcasting patterns in models
    - Turbo Stream templates
 
-3. **Official Hotwire Docs** (add to `references/` as needed):
-   - Turbo handbook
-   - Stimulus handbook
-   - API references
+### When to Load Reference Materials
+
+- **Decision-making**: Use the decision framework in SKILL.md first
+- **Implementation details**: Read specific handbook chapters when:
+  - Implementing a specific Turbo feature (check Turbo handbook)
+  - Writing Stimulus controllers (check Stimulus handbook)
+  - Debugging unexpected behavior (consult relevant handbook chapter)
+  - Needing API details or configuration options
+- **Code patterns**: Check Campfire codebase for real-world examples
 
 ---
 
