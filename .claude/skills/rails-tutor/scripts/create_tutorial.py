@@ -55,7 +55,8 @@ def create_tutorial(topic, concepts=None, output_dir=None):
     template = f"""---
 concepts: {concepts}
 description: [TODO: Fill after completing tutorial - one paragraph summary]
-understanding_score: 0
+understanding_score: null
+last_quizzed: null
 prerequisites: []
 created: {date_str_frontmatter}
 last_updated: {date_str_frontmatter}
@@ -119,6 +120,10 @@ Delete this section if no practical exercise makes sense for this concept.]
 ## Q&A
 
 [Questions and answers will be added here as the learner asks them during the tutorial]
+
+## Quiz History
+
+[Quiz sessions will be recorded here after the learner is quizzed on this topic]
 """
 
     # Write template to file

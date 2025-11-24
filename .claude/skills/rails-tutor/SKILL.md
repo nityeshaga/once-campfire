@@ -23,21 +23,28 @@ Then show this plan to the user and proceed to the tutorial creation step only i
 ## Tutorial Creation
 
 Each tutorial is a markdown file in `references/tutorials/` with this structure:
-```yaml  
----  
-concepts: [primary_concept, related_concept_1, related_concept_2]  
-description: One-paragraph summary of what this tutorial covers  
-understanding_score: 0  # Updated as learning progresses (1-10)  
-prerequisites: [references/tutorials/tutorial_1_name.md, references/tutorials/tutorial_2_name.md, (upto 3 other existing tutorials)]  
-created: DD-MM-YYYY  
-last\_updated: DD-MM-YYYY  
-—--
+```yaml
+---
+concepts: [primary_concept, related_concept_1, related_concept_2]
+description: One-paragraph summary of what this tutorial covers
+understanding_score: null  # null until quizzed, then 1-10 based on quiz performance
+last_quizzed: null  # null until first quiz, then DD-MM-YYYY
+prerequisites: [references/tutorials/tutorial_1_name.md, references/tutorials/tutorial_2_name.md, (upto 3 other existing tutorials)]
+created: DD-MM-YYYY
+last_updated: DD-MM-YYYY
+---
 
 Full contents of tutorial go here
 
-—--
+---
 
-Optional Q&A with the user go here. You must add them here as the user asks cross questions about the concepts taught in this tutorial.  
+## Q&A
+
+Cross-questions during learning go here.
+
+## Quiz History
+
+Quiz sessions recorded here.
 ```
 
 Run `scripts/create_tutorial.py` like this to create a new tutorial with template:
@@ -61,11 +68,12 @@ Note: If you're not sure about a fact or capability or new Rails feature, do web
 
 Tutorials aren't static documents - they evolve:
 
-- When the learner asks clarifying questions, append a `## Q&A` section capturing the exchange  
-- If the learner says they can't follow the tutorial or need you to take a different approach, you should update the tutorial like they ask.  
-- Update `understanding_score` based on the quality of their questions (sophisticated questions = higher score, fundamental confusion = lower score)  
-- Update `last_updated` timestamp  
+- When the learner asks clarifying questions, append to the `## Q&A` section capturing the exchange
+- If the learner says they can't follow the tutorial or need you to take a different approach, update the tutorial like they ask
+- Update `last_updated` timestamp
 - If a question reveals a gap in prerequisites, note it for future tutorial planning
+
+Note: `understanding_score` is only updated through Quiz Mode, not during teaching.
 
 ## What Makes Great Teaching
 **DO**: Meet them where they are. Use their vocabulary. Reference their past struggles. Make connections to concepts they already own. Be encouraging but honest about complexity.
@@ -75,3 +83,48 @@ Tutorials aren't static documents - they evolve:
 **CALIBRATE**: A learner with 3 tutorials is different from one with 30. Early tutorials need more scaffolding and encouragement. Later tutorials can move faster and reference the shared history you've built.
 
 Remember: The goal isn't to teach Rails. It's to teach THIS person Rails, using THEIR code, building on THEIR specific journey. Every tutorial should feel like it was written specifically for them - because it was.
+
+## Quiz Mode
+
+Tutorials teach. Quizzes verify. The score should reflect what the learner actually retained, not what was presented to them.
+
+**Triggers:**
+- Explicit: "Quiz me on ActiveRecord callbacks" → quiz that specific concept
+- Open: "Quiz me on some Rails concepts" → you choose what to quiz based on low scores, stale knowledge (old `last_quizzed`), or foundational gaps
+
+**Philosophy:**
+
+A quiz isn't an exam - it's a conversation that reveals understanding. Ask questions that expose mental models, not just syntax recall. The goal is to find the edges of their knowledge: where does solid understanding fade into uncertainty?
+
+Mix question types based on what the concept demands:
+- Conceptual ("when would you use X over Y?")
+- Code reading ("what does this code in your app do?")
+- Code writing ("write a scope that does X")
+- Debugging ("what's wrong here?")
+
+Use their codebase for examples whenever possible. "What does line 47 of `app/models/user.rb` do?" is more valuable than abstract snippets.
+
+Follow the concept of spaced repetition to decide what to quiz the learner on based on their understanding_score and last_quizzed date.
+
+**Scoring:**
+
+After the quiz, update `understanding_score` honestly:
+- **1-3**: Can't recall the concept, needs re-teaching
+- **4-5**: Vague memory, partial answers
+- **6-7**: Solid understanding, minor gaps
+- **8-9**: Strong grasp, handles edge cases
+- **10**: Could teach this to someone else
+
+Also update `last_quizzed: DD-MM-YYYY` in the frontmatter.
+
+**Recording:**
+
+Append to the tutorial's `## Quiz History` section:
+```
+### Quiz - DD-MM-YYYY
+**Q:** [Question asked]
+**A:** [Brief summary of their response and what it revealed about understanding]
+Score updated: 5 → 7
+```
+
+This history helps future quizzes avoid repetition and track progression over time.

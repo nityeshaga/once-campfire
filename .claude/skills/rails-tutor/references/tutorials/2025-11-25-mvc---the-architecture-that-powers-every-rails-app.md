@@ -1,10 +1,11 @@
 ---
 concepts: [MVC, Request-Response Cycle, Convention Over Configuration]
 description: Your first Rails tutorial exploring MVC architecture by tracing a real request through Campfire - from URL to rendered page. Covers how routes, controllers, models, and views work together, and why Rails organizes code the way it does.
-understanding_score: null
+understanding_score: 7
 prerequisites: []
 created: 25-11-2025
 last_updated: 25-11-2025
+last_quizzed: 25-11-2025
 ---
 
 # MVC - The Architecture That Powers Every Rails App
@@ -461,3 +462,20 @@ The controller just says `@room.receive(@message)`. It doesn't know or care abou
 The controller's job is: "a message was created, tell the room." The model's job is: "I know what to do when I receive a message."
 
 **The key insight: business logic is about WHAT happens, not HOW it's implemented or WHERE it's displayed.**
+
+---
+
+## Quiz History
+
+### Quiz - 25-11-2025
+
+**Q1:** Why does `room.receive(message)` live in the Model instead of the Controller?
+**A:** Correctly identified it as business logic using the "stakeholder test" - if a PM would care about the rule, it's business logic and belongs in models.
+
+**Q2:** List the file paths for a new "Bookmarks" feature.
+**A:** Got model (`bookmark.rb`) and controller (`bookmarks_controller.rb`) correct. Initially confused about views - thought it was a single file rather than a directory with action-named files (`app/views/bookmarks/*.html.erb`).
+
+**Q3:** Order the request lifecycle steps for visiting `/rooms/5`.
+**A:** Perfect - correctly ordered: Browser → Router → Controller → Model/DB → View → Browser.
+
+**Score:** 7/10 - Strong conceptual understanding of MVC separation and request flow. Gap in precise view file conventions.

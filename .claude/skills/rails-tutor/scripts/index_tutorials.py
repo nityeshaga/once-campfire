@@ -44,12 +44,19 @@ def extract_frontmatter(filepath):
             key = key.strip()
             value = value.strip()
 
-            # Convert understanding_score to int
-            if key == 'understanding_score' and value:
-                try:
-                    value = int(value)
-                except ValueError:
-                    pass
+            # Convert understanding_score to int, or None if "null"
+            if key == 'understanding_score':
+                if value == 'null' or not value:
+                    value = None
+                else:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass
+
+            # Handle null values for last_quizzed
+            if key == 'last_quizzed' and value == 'null':
+                value = None
 
             # Handle list/array values for prerequisites
             if key == 'prerequisites' and value.startswith('['):
@@ -97,7 +104,8 @@ def index_tutorials(tutorials_dir=None):
                 "filepath": str(filepath),
                 "concepts": frontmatter.get("concepts", ""),
                 "description": frontmatter.get("description", ""),
-                "understanding_score": frontmatter.get("understanding_score", 0),
+                "understanding_score": frontmatter.get("understanding_score"),
+                "last_quizzed": frontmatter.get("last_quizzed"),
                 "prerequisites": frontmatter.get("prerequisites", []),
                 "created": frontmatter.get("created", ""),
                 "last_updated": frontmatter.get("last_updated", "")
@@ -119,7 +127,13 @@ def format_human_readable(tutorials):
         output.append(f"   Concepts: {tutorial['concepts']}")
         if tutorial['description']:
             output.append(f"   Description: {tutorial['description']}")
-        output.append(f"   Understanding: {tutorial['understanding_score']}/10")
+        score = tutorial['understanding_score']
+        if score is None:
+            output.append(f"   Understanding: not quizzed yet")
+        else:
+            output.append(f"   Understanding: {score}/10")
+        if tutorial.get('last_quizzed'):
+            output.append(f"   Last quizzed: {tutorial['last_quizzed']}")
         if tutorial.get('created'):
             output.append(f"   Created: {tutorial['created']}")
         if tutorial.get('prerequisites') and tutorial['prerequisites']:
