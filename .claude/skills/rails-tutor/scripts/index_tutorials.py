@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+"""
+Index all tutorials by extracting their YAML frontmatter.
+
+Usage:
+    python index_tutorials.py
+    python index_tutorials.py --tutorials-dir /path/to/tutorials
+    python index_tutorials.py --format json
+    python index_tutorials.py --format human
+"""
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+
+def extract_frontmatter(filepath):
+    """
+    Extract YAML frontmatter from a markdown file.
+
+    Args:
+        filepath: Path to markdown file
+
+    Returns:
+        dict with frontmatter fields or None if no frontmatter found
+    """
+    content = filepath.read_text()
+
+    # Match YAML frontmatter between --- delimiters
+    match = re.match(r'^---\s*\n(.*?)\n---\s*\n', content, re.DOTALL)
+    if not match:
+        return None
+
+    frontmatter_text = match.group(1)
+    frontmatter = {}
+
+    # Parse simple YAML key: value pairs
+    for line in frontmatter_text.split('\n'):
+        line = line.strip()
+        if ':' in line:
+            key, value = line.split(':', 1)
+            key = key.strip()
+            value = value.strip()
+
+            # Convert understanding_score to int
+            if key == 'understanding_score' and value:
+                try:
+                    value = int(value)
+                except ValueError:
+                    pass
+
+            # Handle list/array values for prerequisites
+            if key == 'prerequisites' and value.startswith('['):
+                # Simple list parsing - extract items between brackets
+                value = value.strip('[]').strip()
+                if value:
+                    frontmatter[key] = [item.strip() for item in value.split(',')]
+                else:
+                    frontmatter[key] = []
+            else:
+                frontmatter[key] = value
+
+    return frontmatter
+
+
+def index_tutorials(tutorials_dir=None):
+    """
+    Index all tutorials in the directory.
+
+    Args:
+        tutorials_dir: Path to tutorials directory (defaults to ../references/tutorials/)
+
+    Returns:
+        list of dicts with tutorial metadata
+    """
+    # Default directory is references/tutorials/ relative to this script
+    if tutorials_dir is None:
+        script_dir = Path(__file__).parent
+        tutorials_dir = script_dir.parent / "references" / "tutorials"
+    else:
+        tutorials_dir = Path(tutorials_dir)
+
+    if not tutorials_dir.exists():
+        return []
+
+    tutorials = []
+
+    # Find all .md files in tutorials directory
+    for filepath in sorted(tutorials_dir.glob("*.md")):
+        frontmatter = extract_frontmatter(filepath)
+
+        if frontmatter:
+            tutorials.append({
+                "filename": filepath.name,
+                "filepath": str(filepath),
+                "concepts": frontmatter.get("concepts", ""),
+                "description": frontmatter.get("description", ""),
+                "understanding_score": frontmatter.get("understanding_score", 0),
+                "prerequisites": frontmatter.get("prerequisites", []),
+                "created": frontmatter.get("created", ""),
+                "last_updated": frontmatter.get("last_updated", "")
+            })
+
+    return tutorials
+
+
+def format_human_readable(tutorials):
+    """Format tutorials as human-readable text."""
+    if not tutorials:
+        return "No tutorials found. The user is a complete beginner - create their first Rails lesson!"
+
+    output = []
+    output.append(f"Found {len(tutorials)} tutorial(s):\n")
+
+    for tutorial in tutorials:
+        output.append(f"📚 {tutorial['filename']}")
+        output.append(f"   Concepts: {tutorial['concepts']}")
+        if tutorial['description']:
+            output.append(f"   Description: {tutorial['description']}")
+        output.append(f"   Understanding: {tutorial['understanding_score']}/10")
+        if tutorial.get('created'):
+            output.append(f"   Created: {tutorial['created']}")
+        if tutorial.get('prerequisites') and tutorial['prerequisites']:
+            prereqs = ', '.join(tutorial['prerequisites']) if isinstance(tutorial['prerequisites'], list) else tutorial['prerequisites']
+            output.append(f"   Prerequisites: {prereqs}")
+        output.append("")
+
+    return "\n".join(output)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Index all Rails tutorials by extracting frontmatter"
+    )
+    parser.add_argument(
+        "--tutorials-dir",
+        help="Path to tutorials directory (defaults to ../references/tutorials/)",
+        default=None
+    )
+    parser.add_argument(
+        "--format",
+        choices=["json", "human"],
+        default="json",
+        help="Output format (default: json)"
+    )
+
+    args = parser.parse_args()
+
+    try:
+        tutorials = index_tutorials(args.tutorials_dir)
+
+        if args.format == "json":
+            if not tutorials:
+                print(json.dumps({
+                    "tutorials": [],
+                    "message": "No tutorials found. The user is a complete beginner - create their first Rails lesson!"
+                }, indent=2))
+            else:
+                print(json.dumps({"tutorials": tutorials}, indent=2))
+        else:
+            print(format_human_readable(tutorials))
+
+        return 0
+    except Exception as e:
+        print(f"❌ Error indexing tutorials: {e}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
