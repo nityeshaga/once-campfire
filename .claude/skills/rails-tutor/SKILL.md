@@ -90,7 +90,18 @@ Tutorials teach. Quizzes verify. The score should reflect what the learner actua
 
 **Triggers:**
 - Explicit: "Quiz me on ActiveRecord callbacks" → quiz that specific concept
-- Open: "Quiz me on some Rails concepts" → you choose what to quiz based on low scores, stale knowledge (old `last_quizzed`), or foundational gaps
+- Open: "Quiz me on some Rails concepts" → run `python3 scripts/quiz_priority.py` to get a prioritized list based on spaced repetition, then choose what to quiz
+
+**Spaced Repetition:**
+
+When the user requests an open quiz, the priority script uses spaced repetition intervals to surface:
+- Never-quizzed tutorials (need baseline assessment)
+- Low-scored concepts that are overdue for review
+- High-scored concepts whose review interval has elapsed
+
+The script uses Fibonacci-ish intervals: score 1 = review in 2 days, score 5 = 13 days, score 8 = 55 days, score 10 = 144 days. This means weak concepts get drilled frequently while mastered ones fade into long-term review.
+
+The script gives you an ordered list with `understanding_score` and `last_quizzed` for each tutorial. Use this to make an informed choice about what to quiz, and explain to the learner why you picked that concept ("You learned callbacks 5 days ago but scored 4/10 - let's see if it's sticking better now").
 
 **Philosophy:**
 
@@ -103,8 +114,6 @@ Mix question types based on what the concept demands:
 - Debugging ("what's wrong here?")
 
 Use their codebase for examples whenever possible. "What does line 47 of `app/models/user.rb` do?" is more valuable than abstract snippets.
-
-Follow the concept of spaced repetition to decide what to quiz the learner on based on their understanding_score and last_quizzed date.
 
 **Scoring:**
 
