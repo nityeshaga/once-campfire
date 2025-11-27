@@ -9,7 +9,7 @@ The user asks to learn something in Rails - either a specific concept or an open
 
 ## First Step: Know Your Learner
 
-**Always start by reading `references/tutorials/learner_profile.md` if it exists.** This profile contains crucial context about who you're teaching - their background, goals, and personality. Use it to calibrate everything: what analogies will land, how fast to move, what examples resonate.
+**Always start by reading `.claude/skills/rails-tutor/references/tutorials/learner_profile.md` if it exists.** This profile contains crucial context about who you're teaching - their background, goals, and personality. Use it to calibrate everything: what analogies will land, how fast to move, what examples resonate.
 
 If no tutorials exist in `references/tutorials/` AND no learner profile exists at `references/tutorials/learner_profile.md`, this is a brand new learner. Before teaching anything, you need to understand who you're teaching.
 
@@ -25,7 +25,7 @@ Ask these three questions, one at a time. Wait for each answer before asking the
 
 4. **Optional**: Based on the above answers, you may ask upto one optional 4th question if it will make your understanding of the learner richer.
 
-After gathering responses, create `references/tutorials/learner_profile.md` and put the interview Q&A verbatim there:
+After gathering responses, create `.claude/skills/rails-tutor/references/tutorials/learner_profile.md` and put the interview Q&A verbatim there:
 
 ```yaml
 ---
@@ -56,12 +56,12 @@ Our general goal is to take the user from newbie to a senior Ruby on Rails engin
 Before creating a tutorial, make a plan by following these steps:
 
 - **Load learner context**: Read `references/tutorials/learner_profile.md` to understand who you're teaching - their background, goals, and personality.
-- **Survey existing knowledge**: Run `python3 scripts/index_tutorials.py` to understand what concepts have been covered, at what depth, and how well they landed (understanding scores). Optionally, dive into particular tutorials in `references/tutorials/` to read them.  
-- **Identify the gap**: What's the next concept that would be most valuable? Consider both what they've asked for AND what naturally follows from their current knowledge. Think of a curriculum that would get them from their current point to Senior Engineer - what should be the next thing they learn to advance their Rails knowledge?
+- **Survey existing knowledge**: Run `python3 .claude/skills/rails-tutor/scripts/index_tutorials.py` to understand what concepts have been covered, at what depth, and how well they landed (understanding scores). Optionally, dive into particular tutorials in `references/tutorials/` to read them.  
+- **Identify the gap**: What's the next concept that would be most valuable? Consider both what they've asked for AND what naturally follows from their current knowledge. Think of a curriculum that would get them from their current point to Senior Engineer - what should be the next 3 topics they need to learn to advance their Rails knowledge in this direction?
 - **Find the anchor**: Locate real examples in the codebase that demonstrate this concept. Learning from abstract examples is forgettable; learning from YOUR code is sticky.
 - **(Optional) Use ask-user-question tool**: Ask clarifying questions to the learner to understand their intent, goals or expectations if it'll help you make a better plan.
 
-Then show this plan to the user and proceed to the tutorial creation step only if the user approves. If the user rejects, create a new plan using steps mentioned above.
+Then show this curriculum plan of **next 3 TUTORIALS** to the user and proceed to the tutorial creation step only if the user approves. If the user rejects, create a new plan using steps mentioned above.
 
 ## Tutorial Creation
 
@@ -93,7 +93,7 @@ Quiz sessions recorded here.
 Run `scripts/create_tutorial.py` like this to create a new tutorial with template:
 
 ```bash  
-python scripts/create_tutorial.py "Topic Name" --concepts "Concept1,Concept2"
+python3 .claude/skills/rails-tutor/scripts/create_tutorial.py "Topic Name" --concepts "Concept1,Concept2"
 ```
 
 This creates an empty template of the tutorial. Then you should edit the newly created file to write in the actual tutorial.
@@ -133,7 +133,7 @@ Tutorials teach. Quizzes verify. The score should reflect what the learner actua
 
 **Triggers:**
 - Explicit: "Quiz me on ActiveRecord callbacks" → quiz that specific concept
-- Open: "Quiz me on some Rails concepts" → run `python3 scripts/quiz_priority.py` to get a prioritized list based on spaced repetition, then choose what to quiz
+- Open: "Quiz me on some Rails concepts" → run `python3 .claude/skills/rails-tutor/scripts/quiz_priority.py` to get a prioritized list based on spaced repetition, then choose what to quiz
 
 **Spaced Repetition:**
 
