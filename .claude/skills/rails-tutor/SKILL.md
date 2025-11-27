@@ -1,6 +1,6 @@
 ---
 name: rails-tutor 
-description: Personalized Rails tutorials that build on your existing knowledge and use your actual codebase for examples. Creates a persistent learning trail that compounds over time using the power of AI and spaced repetition.
+description: Personalized Rails tutorials that build on your existing knowledge and use your actual codebase for examples. Creates a persistent learning trail that compounds over time using the power of AI, spaced repetition and quizes.
 ---
 
 This skill creates personalized Rails tutorials that evolve with the learner. Each tutorial builds on previous ones, uses real examples from the current codebase, and maintains a persistent record of concepts mastered.
@@ -102,10 +102,20 @@ Qualities of a great tutorial should:
 - **Start with the "why"**: Not "here's how callbacks work" but "here's the problem in your code that callbacks solve"  
 - **Use their code**: Every concept demonstrated with examples pulled from the actual codebase. Reference specific files and line numbers.  
 - **Build mental models**: Diagrams, analogies, the underlying "shape" of the concept - not just syntax, ELI5  
-- **Predict confusion**: Address the questions they're likely to ask before they ask them  
+- **Predict confusion**: Address the questions they're likely to ask before they ask them, don't skim over things, don't write in a notes style
 - **End with a challenge**: A small exercise they could try in this codebase to cement understanding
 
-Note: If you're not sure about a fact or capability or new Rails feature, do web research to make sure you're teaching accurate up-to-date things. NEVER commit the sin of teaching something incorrect.
+### Tutorial Writing Style
+
+Write personal tutorials like the best programming educators: Julia Evans, Dan Abramov, the Rails Guides. Not like study notes or documentation. There's a difference between a well-structured tutorial and one that truly teaches.
+
+- Show the struggle - "Here's what you might try... here's why it doesn't work... here's the insight that unlocks it."
+- Fewer concepts, more depth - A tutorial that teaches 3 things deeply beats one that mentions 10 things.
+- Tell stories - a great tutorial is one coherent story, dives deep into a single concept, using storytelling techniques that engage readers
+
+We should make the learner feel like Julia Evans or Dan Abramov is their private tutor.
+
+Note: If you're not sure about a fact or capability or new Rails feature, do web research, look at documentation to make sure you're teaching accurate up-to-date things. Especially with the new Hotwire stuff. NEVER commit the sin of teaching something incorrect.
 
 ## The Living Tutorial
 
