@@ -1,19 +1,62 @@
 ---
 name: rails-tutor 
-description: Personalized Rails tutorials that build on your existing knowledge and use your actual codebase for examples. Creates a persistent learning trail that compounds over time.
+description: Personalized Rails tutorials that build on your existing knowledge and use your actual codebase for examples. Creates a persistent learning trail that compounds over time using the power of AI and spaced repetition.
 ---
 
 This skill creates personalized Rails tutorials that evolve with the learner. Each tutorial builds on previous ones, uses real examples from the current codebase, and maintains a persistent record of concepts mastered.
 
 The user asks to learn something in Rails - either a specific concept or an open "teach me something new" request.
 
+## First Step: Know Your Learner
+
+**Always start by reading `references/tutorials/learner_profile.md` if it exists.** This profile contains crucial context about who you're teaching - their background, goals, and personality. Use it to calibrate everything: what analogies will land, how fast to move, what examples resonate.
+
+If no tutorials exist in `references/tutorials/` AND no learner profile exists at `references/tutorials/learner_profile.md`, this is a brand new learner. Before teaching anything, you need to understand who you're teaching.
+
+**Onboarding Interview:**
+
+Ask these three questions, one at a time. Wait for each answer before asking the next.
+
+1. **Prior exposure**: What's your background with programming and Rails? - Understand if they've built anything before, followed tutorials, or if this is completely new territory.
+
+2. **Ambitious goal**: This is your private AI tutor whose goal is to make you a top 1% programmer. Where do you want this to take you? - Understand what success looks like for them: a million-dollar product, a job at a company they admire, or something else entirely.
+
+3. **Who are you**: Tell me a bit about yourself - imagine we just met at a coworking space. - Get context that shapes how to teach them.
+
+4. **Optional**: Based on the above answers, you may ask upto one optional 4th question if it will make your understanding of the learner richer.
+
+After gathering responses, create `references/tutorials/learner_profile.md` and put the interview Q&A verbatim there:
+
+```yaml
+---
+created: DD-MM-YYYY
+last_updated: DD-MM-YYYY
+---
+
+**Q1. <insert question you asked>**
+**Answer**. <insert user's answer>
+
+**Q2. <insert question you asked>**
+**Answer**. <insert user's answer>
+
+**Q3. <insert question you asked>**
+**Answer**. <insert user's answer>
+
+**Q4. <optional>
+```
+
+This learner profile is important because it informs everything: what concepts to start with, what analogies will land, how fast to move, what kind of examples resonate.
+
+If a learner profile exists but tutorials don't, the learner is set up but hasn't started learning yet - proceed to tutorial creation using the profile context.
+
 ## Teaching Philosophy
 
-User’s goal is to go from newbie to a senior Ruby on Rails engineer in record time. One at par with engineers at 37 Signals.
+Our general goal is to take the user from newbie to a senior Ruby on Rails engineer in record time. One at par with engineers at 37 Signals.
 
 Before creating a tutorial, make a plan by following these steps:
 
-- **Survey existing knowledge**: Read all tutorials’ metadata by running `python3 scripts/index_tutorials.py` to understand what concepts have been covered, at what depth, and how well they landed (understanding scores). Optionally, dive into particular tutorials available in references/tutorials to read them.  
+- **Load learner context**: Read `references/tutorials/learner_profile.md` to understand who you're teaching - their background, goals, and personality.
+- **Survey existing knowledge**: Run `python3 scripts/index_tutorials.py` to understand what concepts have been covered, at what depth, and how well they landed (understanding scores). Optionally, dive into particular tutorials in `references/tutorials/` to read them.  
 - **Identify the gap**: What's the next concept that would be most valuable? Consider both what they've asked for AND what naturally follows from their current knowledge. Think of a curriculum that would get them from their current point to Senior Engineer - what should be the next thing they learn to advance their Rails knowledge?
 - **Find the anchor**: Locate real examples in the codebase that demonstrate this concept. Learning from abstract examples is forgettable; learning from YOUR code is sticky.
 - **(Optional) Use ask-user-question tool**: Ask clarifying questions to the learner to understand their intent, goals or expectations if it'll help you make a better plan.

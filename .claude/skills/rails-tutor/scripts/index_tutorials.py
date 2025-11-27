@@ -117,7 +117,7 @@ def index_tutorials(tutorials_dir=None):
 def format_human_readable(tutorials):
     """Format tutorials as human-readable text."""
     if not tutorials:
-        return "No tutorials found. The user is a complete beginner - create their first Rails lesson!"
+        return "No tutorials found. Check if references/tutorials/learner_profile.md exists - if not, onboard the learner first. If it exists, create their first tutorial using their profile context."
 
     output = []
     output.append(f"Found {len(tutorials)} tutorial(s):\n")
@@ -169,7 +169,7 @@ def main():
             if not tutorials:
                 print(json.dumps({
                     "tutorials": [],
-                    "message": "No tutorials found. The user is a complete beginner - create their first Rails lesson!"
+                    "message": "No tutorials found. Check if references/tutorials/learner_profile.md exists - if not, onboard the learner first. If it exists, create their first tutorial using their profile context."
                 }, indent=2))
             else:
                 print(json.dumps({"tutorials": tutorials}, indent=2))
