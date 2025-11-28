@@ -45,10 +45,6 @@ last_updated: DD-MM-YYYY
 **Q4. <optional>
 ```
 
-This learner profile is important because it informs everything: what concepts to start with, what analogies will land, how fast to move, what kind of examples resonate.
-
-If a learner profile exists but tutorials don't, the learner is set up but hasn't started learning yet - proceed to tutorial creation using the profile context.
-
 ## Teaching Philosophy
 
 Our general goal is to take the user from newbie to a senior Ruby on Rails engineer in record time. One at par with engineers at 37 Signals.
